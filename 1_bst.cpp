@@ -1,21 +1,21 @@
 #include<iostream>
-#include<string>
 using namespace std;
 
-struct TreeNode {
-    string key;
-    string value;
-    TreeNode *left;
-    TreeNode *right;
+class tree {
+public:
+    string key;  
+    string value;  
+    tree* left;
+    tree* right;
 
-    TreeNode() {
+    tree() {
         key = "";
         value = "";
         left = NULL;
         right = NULL;
     }
 
-    TreeNode(string k, string v) {
+    tree(string k, string v) { 
         key = k;
         value = v;
         left = NULL;
@@ -23,177 +23,160 @@ struct TreeNode {
     }
 };
 
-// Insert a node into BST (no duplicate keys allowed)
-TreeNode* insert(TreeNode* node, string key, string value) {
+tree* insert(tree* node, string key, string value) {
     if (node == NULL) {
-        return new TreeNode(key, value);
+        return new tree(key, value);
     }
     if (node->key == key) {
-        cout << "Duplicate key. Insertion not allowed.\n";
+        node->value = value;  
         return node;
     }
-    if (key < node->key) {
-        node->left = insert(node->left, key, value);
+    if (node->key > key) {
+        node->left = insert(node->left, key, value);  
     } else {
-        node->right = insert(node->right, key, value);
+        node->right = insert(node->right, key, value);  
     }
     return node;
 }
 
-// Search for a key
-TreeNode* search(TreeNode* root, string key) {
-    if (root == NULL || root->key == key) {
-        return root;
+
+tree* Delete(tree* root, string key) {
+    if (root == NULL) {
+        return root;  
     }
-    if (key < root->key) {
-        return search(root->left, key);
+
+    if (root->key > key) {
+        root->left = Delete(root->left, key);  
+    } else if (root->key < key) {
+        root->right = Delete(root->right, key); 
     } else {
-        return search(root->right, key);
-    }
-}
-
-// Inorder traversal
-void inorder(TreeNode* root) {
-    if (root != NULL) {
-        inorder(root->left);
-        cout << root->key << " : " << root->value << endl;
-        inorder(root->right);
-    }
-}
-
-// Preorder traversal
-void preorder(TreeNode* root) {
-    if (root != NULL) {
-        cout << root->key << " : " << root->value << endl;
-        preorder(root->left);
-        preorder(root->right);
-    }
-}
-
-// Postorder traversal
-void postorder(TreeNode* root) {
-    if (root != NULL) {
-        postorder(root->left);
-        postorder(root->right);
-        cout << root->key << " : " << root->value << endl;
-    }
-}
-
-// Delete a node
-TreeNode* Delete(TreeNode* root, string key) {
-    if (root == NULL) return root;
-
-    if (key < root->key) {
-        root->left = Delete(root->left, key);
-    } else if (key > root->key) {
-        root->right = Delete(root->right, key);
-    } else {
+        
+        tree* temp;
         if (root->left == NULL) {
-            TreeNode* temp = root->right;
+            temp = root->right;  
             delete root;
             return temp;
         } else if (root->right == NULL) {
-            TreeNode* temp = root->left;
+            temp = root->left;   
             delete root;
             return temp;
-        } else {
-            TreeNode* succ = root->right;
-            while (succ->left != NULL)
-                succ = succ->left;
-            root->key = succ->key;
-            root->value = succ->value;
-            root->right = Delete(root->right, succ->key);
         }
+
+        // Node with two children: get the inorder successor
+        temp = root->right;
+        while (temp && temp->left != NULL) {
+            temp = temp->left;
+        }
+        root->key = temp->key;  // Copy the inorder successor's key to this node
+        root->value = temp->value;  // Copy the inorder successor's value
+        root->right = Delete(root->right, temp->key); // Delete the inorder successor
     }
     return root;
 }
 
-// Mirror the dictionary
-void mirror(TreeNode* root) {
-    if (root == NULL) return;
-    swap(root->left, root->right);
-    mirror(root->left);
-    mirror(root->right);
+
+void inorder(tree* root) {
+    if (root != NULL) {
+        inorder(root->left);
+        cout << "Key: " << root->key << ", Value: " << root->value << " | ";
+        inorder(root->right);
+    }
 }
 
-// Copy dictionary (Deep Copy)
-TreeNode* copy(TreeNode* root) {
-    if (root == NULL) return NULL;
-    TreeNode* newRoot = new TreeNode(root->key, root->value);
-    newRoot->left = copy(root->left);
-    newRoot->right = copy(root->right);
-    return newRoot;
+
+tree* search(tree* root, string key) {
+    if (root == NULL || root->key == key) {
+        return root;
+    }
+    if (root->key > key) {
+        return search(root->left, key);  
+    } else {
+        return search(root->right, key); 
+    }
 }
 
-// Level-wise display (simple recursive approximation)
-void display_level(TreeNode* root) {
-    if (root == NULL) return;
+void display_level(tree* root) {
+    if (root == NULL) {
+        return;
+    }
+    cout << root->key << " ";  
 
-    cout << root->key << " : " << root->value << endl;
     if (root->left != NULL) {
-        display_level(root->left);
+        cout << root->left->key << " ";  
     }
     if (root->right != NULL) {
-        display_level(root->right);
+        cout << root->right->key << " ";  
+    }
+
+    if (root->left != NULL) {
+        display_level(root->left->left);  
+        display_level(root->left->right);  
+    }
+    if (root->right != NULL) {
+        display_level(root->right->left);  
+        display_level(root->right->right);  
     }
 }
 
 int main() {
-    TreeNode* root = NULL;
+    tree* root = NULL;
     int choice;
-    string key, value;
-
     do {
-        cout << "1. Insert word\n2. Delete word\n3. Search word\n4. Display (Inorder)\n5. Mirror dictionary\n6. Copy dictionary\n7. Level-wise display\n8. Exit\n";
+        cout << "1.insert\n 2.inorderdisplay\n 3.searching\n 4.delete\n 5.levelwisedisplay\n 6.exit\n";
         cout << "Enter your choice: ";
         cin >> choice;
-
-        switch(choice) {
-            case 1:
-                cout << "Enter word: ";
+        switch (choice) {
+            case 1: {
+                string key, value;
+                cout << "Enter key to insert: ";
                 cin >> key;
-                cout << "Enter meaning: ";
-                cin.ignore();
-                getline(cin, value);
-                root = insert(root, key, value);
-                break;
-            case 2:
-                cout << "Enter word to delete: ";
-                cin >> key;
-                root = Delete(root, key);
-                cout << "Deleted (if existed).\n";
-                break;
-            case 3:
-                cout << "Enter word to search: ";
-                cin >> key;
-                {
-                    TreeNode* found = search(root, key);
-                    if (found) {
-                        cout << "Found: " << found->key << " : " << found->value << endl;
-                    } else {
-                        cout << "Word not found.\n";
-                    }
-                }
-                break;
-            case 4:
-                inorder(root);
-                break;
-            case 5:
-                mirror(root);
-                break;
-            case 6: {
-                TreeNode* copyRoot = copy(root);
-                inorder(copyRoot);
+                cout << "Enter value associated with the key: ";
+                cin >> value;
+                root = insert(root, key, value); 
                 break;
             }
-            case 7:
+            case 2: {
+                cout << "Displaying inorder traversal: ";
+                inorder(root);
+                cout << endl;
+                break;
+            }
+            case 3: {
+                string key;
+                cout << "Enter key to search: ";
+                cin >> key;
+                tree* found = search(root, key);
+                if (found != NULL) {
+                    cout << "Node found: Key = " << found->key << ", Value = " << found->value << endl;
+                } else {
+                    cout << "Node not found" << endl;
+                }
+                break;
+            }
+            case 4: {
+                string key;
+                cout << "Enter key to delete: ";
+                cin >> key;
+                root = Delete(root, key);  
+                cout << "Tree after deletion: ";
+                inorder(root);
+                cout << endl;
+                break;
+            }
+            case 5: {
+                cout << "Level-wise display: ";
                 display_level(root);
+                cout << endl;
                 break;
-            case 8:
+            }
+            case 6: {
+                cout << "Exiting...\n";
                 break;
-            default:
+            }
         }
-    } while (choice != 8);
+        cout << "Do you want to continue (1 for yes, any other key for no): ";
+        cin >> choice;
+    } while (choice == 1);
 
     return 0;
 }
